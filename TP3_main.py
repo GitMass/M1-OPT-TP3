@@ -10,7 +10,7 @@ def J(x1ETx2) :
 def ImprimeIsovaleur(fct,x2d,y2d):
     x2dETy1d = np.array([x2d,y2d])
     nIso = 75  # Define the number of contours等值线 to be plotted as 21
-    plt.contour(x2d, y2d, J(x2dETy1d),
+    plt.contour(x2d, y2d, fct(x2dETy1d),
                 nIso)  # Plot contours based on f1 function values on the grid, generating 21 contours
 
     plt.title('Isovaleurs')
@@ -18,13 +18,12 @@ def ImprimeIsovaleur(fct,x2d,y2d):
     plt.ylabel('Valeurs de y')
     plt.grid()
     plt.axis('square')
-    plt.show()
 
 def GradJ(x1ETx2) :  # car root ne peut que accepter un seul paramètre à la fct, donc ici on prend une liste x1ETx2 comme paramètre et donnc
     x1, x2 = x1ETx2  # ses valeurs à x1 et x2 dans la fct
     dx1 = 2*x1 - 6*np.cos(2*x1+x2) + 5*np.cos(x1-x2)
     dx2 = 3*x2 - 3*np.cos(2*x1+x2) - 5*np.cos(x1-x2)
-    return [dx1,dx2]
+    return np.array([dx1,dx2])
 
 def d2J(x1ETx2) :    # calculer la dérivée de 2nd ordre
     x1, x2 = x1ETx2
@@ -99,20 +98,22 @@ def VerifyPtMin(solutions,minima,tolerance=1e-5) :
 # Fonction recherche du minimum avec le gradient a pas fixe :
 def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
     # initialisation :
-    Xn = X0
+    Xn = np.array(X0, dtype=float)
     dX = 1
     n = 0
     Xn_vector = [Xn]
 
     # boucle :
     while ((dX>epsilon) and (n<Nmax)) :
-        Xnplus1 = Xn - (5 * x for x in d1J(Xn))
-        dX = abs(Xnplus1 - Xn)
+        Xnplus1 = Xn - (alpha * d1J(Xn))
+        dX = np.sqrt(((Xnplus1[0] - Xn[0])**2)+((Xnplus1[1] - Xn[1])**2))
         Xn = Xnplus1
         n = n + 1
         Xn_vector.append(Xn)
 
     # indice de convergence :
     Converged = (dX <= epsilon)
+    Xn_vector = np.array(Xn_vector)
+
 
     return Xn_vector, Converged
