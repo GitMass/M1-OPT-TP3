@@ -27,3 +27,4 @@ def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
     return Xn_vector, Converged
 
 
+# this was added
