@@ -106,7 +106,7 @@ def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
 
     # boucle :
     while ((dX>epsilon) and (n<Nmax)) :
-        Xnplus1 = Xn - (alpha*d1J(Xn))
+        Xnplus1 = Xn - (5 * x for x in d1J(Xn))
         dX = abs(Xnplus1 - Xn)
         Xn = Xnplus1
         n = n + 1
