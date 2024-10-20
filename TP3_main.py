@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 from scipy.optimize import root
 import scipy.optimize
 
+
+
+## Partie 1 :
+
 def J(x1ETx2) :
     x1,x2 = x1ETx2
     return x1**2 + 1.5*x2**2 - 3*np.sin(2*x1+x2) + 5*np.sin(x1-x2)
@@ -31,7 +35,7 @@ def d2J(x1ETx2) :    # calculer la dérivée de 2nd ordre
     d2J_dxdy = 6*np.sin(2*x1+x2) + 5*np.sin(x1-x2)
     d2J_dydx = 6*np.sin(2*x1+x2) + 5*np.sin(x1-x2)
     d2J_dydy = 3 + 3*np.sin(2*x1+x2) - 5*np.sin(x1-x2)
-    return [[d2J_dxdx, d2J_dxdy], [d2J_dydx, d2J_dydy]]
+    return np.array([[d2J_dxdx, d2J_dxdy], [d2J_dydx, d2J_dydy]])
 
 def PrintSolutions(solutions):
     print("racines trouvées：")
@@ -95,7 +99,8 @@ def VerifyPtMin(solutions,minima,tolerance=1e-5) :
 
 
 
-# Fonction recherche du minimum avec le gradient a pas fixe :
+## Partie 2 :
+
 def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
     # initialisation :
     Xn = np.array(X0, dtype=float)
@@ -115,9 +120,76 @@ def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
     Converged = (dX <= epsilon)
     Xn_vector = np.array(Xn_vector)
 
+    return Xn_vector, Converged
+
+
+
+def Gradient_PasOptimal(F,d1F,X0,epsilon,Nmax,printalpha) :
+
+    def F_step(alpha,Xn,grad):
+        return F(Xn - (alpha * grad))
+
+    # initialisation :
+    Xn = np.array(X0, dtype=float)
+    dX = 1
+    n = 0
+    Xn_vector = [Xn]
+
+    # boucle :
+    while ((dX>epsilon) and (n<Nmax)) :
+        # Calcul du gradient
+        grad = d1F(Xn)
+
+        # calculer le alpha optimal en minimisant F_step
+        res = scipy.optimize.minimize_scalar(F_step, args=(Xn, grad), bounds=(0, 1), method='bounded')
+        alpha = res.x
+
+        Xnplus1 = Xn - (alpha * grad)
+        dX = np.linalg.norm(Xnplus1 - Xn)
+        Xn = Xnplus1
+        n = n + 1
+        Xn_vector.append(Xn)
+
+        if (printalpha==True) :
+            print(f"Iteration {n}: alpha={alpha}")
+
+    # indice de convergence :
+    Converged = (dX <= epsilon)
+    Xn_vector = np.array(Xn_vector)
 
     return Xn_vector, Converged
 
+def Newton(J,d1J,d2J,X0,epsilon,Nmax) :
+    # initialisation :
+    Xn = np.array(X0, dtype=float)
+    dX = 1
+    n = 0
+    Xn_vector = [Xn]
+
+    # boucle :
+    while ((dX>epsilon) and (n<Nmax)) :
+        grad = d1J(Xn)
+        hess = d2J(Xn)
+
+        hess_inv = np.linalg.inv(hess)
+        X_delta = np.dot(hess_inv, -grad)
+        Xnplus1 = Xn + X_delta
+        dX = np.linalg.norm(Xnplus1 - Xn)
+
+        Xn = Xnplus1
+        n = n + 1
+        Xn_vector.append(Xn)
+
+    # indice de convergence :
+    Converged = (dX <= epsilon)
+    Xn_vector = np.array(Xn_vector)
+
+    return Xn_vector, Converged
+
+
+
+
+## Partie 3 :
 
 def l(xETy):
     x,y = xETy
@@ -137,7 +209,6 @@ def DrawStraignt(x,y):
     plt.plot(x, y, 'r-', label='Line through A(0,0) and B(2,-3)', linewidth=2)  # red straight
     plt.legend()
 
-
 def LagrangeEqs(variables):  # ici, on remplace x1 et x2 dans J par x et y, donc c'est x^2 + 1.5y^2 - 3sin(2x+y) + 5sin(x-y)
     x, y, lambd = variables
     eq1 = 2 * x - 6 * np.cos(2 * x + y) + 5 * np.cos(x - y) - 3 / 2 * lambd  # ∂x/∂J - λ*(∂x/∂M)
@@ -152,7 +223,3 @@ def RootLagEq(init_Guess):
         if solution.success:
             solutions.append(solution.x)
     return solutions
-
-
-
-
