@@ -55,13 +55,13 @@ def CalMatrix_DeterNature(solutions):
         print('  vp2 = {}'.format(valPropTem[1]))
 
         if (valPropTem[0] > 0 and valPropTem[1] > 0):
-            print("Val min")
+            print(f"point : {solutions[i]} is Val min")
             solutions[i].append(0)
         elif (valPropTem[0] < 0 and valPropTem[1] < 0):
-            print("Val max")
+            print(f"point : {solutions[i]} Val max")
             solutions[i].append(1)
         elif (valPropTem[0] * valPropTem[1] < 0):
-            print("point selle")
+            print(f"point : {solutions[i]} point selle")
             solutions[i].append(2)
         #valProp.append(valPropTem)
         print('')
@@ -117,3 +117,42 @@ def Gradient_PasFixe(J,d1J,X0,alpha,epsilon,Nmax) :
 
 
     return Xn_vector, Converged
+
+
+def l(xETy):
+    x,y = xETy
+    return y+3/2*x
+
+def grad_l(xETy):
+    x, xy = xETy
+    dl_dx1 = 3/2
+    dl_dx2 = 1
+    return np.array([dl_dx1, dl_dx2])
+
+def StraightEq(a,b,x):
+    y = ((x-a[0])/(b[0]-a[0])) * (b[1]-a[1]) + a[1]
+    return y
+
+def DrawStraignt(x,y):
+    plt.plot(x, y, 'r-', label='Line through A(0,0) and B(2,-3)', linewidth=2)  # red straight
+    plt.legend()
+
+
+def LagrangeEqs(variables):  # ici, on remplace x1 et x2 dans J par x et y, donc c'est x^2 + 1.5y^2 - 3sin(2x+y) + 5sin(x-y)
+    x, y, lambd = variables
+    eq1 = 2 * x - 6 * np.cos(2 * x + y) + 5 * np.cos(x - y) - 3 / 2 * lambd  # ∂x/∂J - λ*(∂x/∂M)
+    eq2 = 3 * y - 3 * np.cos(2 * x + y) - 5 * np.cos(x - y) - lambd  # ∂y/∂J - λ*(∂y/∂M)
+    eq3 = 3 / 2 * x + y  # l'équation du droite : M
+    return [eq1, eq2, eq3]
+
+def RootLagEq(init_Guess):
+    solutions = []
+    for i in init_Guess:
+        solution = root(LagrangeEqs, i)
+        if solution.success:
+            solutions.append(solution.x)
+    return solutions
+
+
+
+
